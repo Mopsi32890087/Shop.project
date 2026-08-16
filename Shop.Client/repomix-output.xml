@@ -1,0 +1,608 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+src/
+  api/
+    index.ts
+  components/
+    AddCommentForm.tsx
+    ProductCard.tsx
+  pages/
+    MainPage.tsx
+    ProductDetailPage.tsx
+    ProductsListPage.tsx
+  services/
+    api.service.ts
+  types/
+    index.ts
+  App.tsx
+  index.tsx
+package.json
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/api/index.ts">
+import axios from 'axios';
+
+export const apiClient = axios.create({
+    baseURL: '/api',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+</file>
+
+<file path="src/components/AddCommentForm.tsx">
+import React, { useState } from 'react';
+import { addComment } from '../services/api.service';
+import { IComment } from '../types';
+
+interface AddCommentFormProps {
+    productId: string;
+    onCommentAdded: (newComment: IComment) => void;
+}
+
+export const AddCommentForm: React.FC<AddCommentFormProps> = ({ productId, onCommentAdded }) => {
+    const [title, setTitle] = useState('');
+    const [email, setEmail] = useState('');
+    const [text, setText] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setSubmitting(true);
+
+        try {
+            const newComment = await addComment({
+                productId,
+                title,
+                email,
+                text
+            });
+
+            onCommentAdded(newComment);
+
+            setTitle('');
+            setEmail('');
+            setText('');
+        } catch (err) {
+            setError('Не удалось сохранить комментарий. Попробуйте еще раз.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <form
+            onSubmit={handleSubmit}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                maxWidth: '450px',
+                marginTop: '1rem',
+                padding: '1rem',
+                backgroundColor: '#f9f9f9',
+                borderRadius: '6px'
+            }}
+        >
+            <h4 style={{ margin: 0 }}>Добавить комментарий</h4>
+
+            {error && <div style={{ color: 'red', fontSize: '0.9rem' }}>{error}</div>}
+
+            <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                    Заголовок:
+                </label>
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box' }}
+                />
+            </div>
+
+            <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                    E-mail:
+                </label>
+                <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box' }}
+                />
+            </div>
+
+            <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                    Текст комментария:
+                </label>
+                <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    required
+                    rows={4}
+                    style={{ width: '100%', padding: '0.5rem', boxSizing: 'border-box', resize: 'vertical' }}
+                />
+            </div>
+
+            <button
+                type="submit"
+                disabled={submitting}
+                style={{
+                    padding: '0.6rem 1.2rem',
+                    backgroundColor: '#007bff',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: submitting ? 'not-allowed' : 'pointer',
+                    alignSelf: 'flex-start'
+                }}
+            >
+                {submitting ? 'Сохранение...' : 'Сохранить'}
+            </button>
+        </form>
+    );
+};
+</file>
+
+<file path="src/components/ProductCard.tsx">
+import * as React from 'react';
+import { Link } from 'react-router-dom';
+import { IProduct } from '../types';
+
+interface ProductCardProps {
+    product: IProduct;
+}
+
+export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+    const placeholderImg = 'https://via.placeholder.com/200x150?text=No+Image';
+
+    return (
+        <div
+            style={{
+                border: '1px solid #e0e0e0',
+                borderRadius: '8px',
+                padding: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                backgroundColor: '#fff',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+            }}
+        >
+            <div>
+                <Link to={`/${product.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <img
+                        src={product.thumbnail || placeholderImg}
+                        alt={product.title}
+                        style={{
+                            width: '100%',
+                            height: '160px',
+                            objectFit: 'cover',
+                            borderRadius: '4px',
+                            marginBottom: '0.75rem'
+                        }}
+                    />
+                    <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>{product.title}</h3>
+                </Link>
+            </div>
+
+            <div style={{ marginTop: '0.5rem', borderTop: '1px solid #f0f0f0', paddingTop: '0.5rem' }}>
+                <p style={{ margin: '0 0 0.25rem 0', fontWeight: 'bold', fontSize: '1.1rem', color: '#2c3e50' }}>
+                    {product.price.toLocaleString()} ₽
+                </p>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: '#7f8c8d' }}>
+                    Комментариев: {product.commentsCount ?? 0}
+                </p>
+            </div>
+        </div>
+    );
+};
+</file>
+
+<file path="src/pages/MainPage.tsx">
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { getProducts } from '../services/api.service';
+
+export const MainPage: React.FC = () => {
+    const [stats, setStats] = useState<{ count: number; totalCost: number }>({ count: 0, totalCost: 0 });
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        getProducts()
+            .then((items) => {
+                const totalCost = items.reduce((sum, item) => sum + Number(item.price), 0);
+                setStats({ count: items.length, totalCost });
+            })
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) return <div className="loader">Загрузка данных...</div>;
+
+    return (
+        <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+            <h1>Shop.Client</h1>
+            <p>
+                В базе данных находится {stats.count} товаров общей стоимостью {stats.totalCost.toLocaleString()} ₽
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <Link to="/products-list">
+                    <button style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>
+                        Перейти к списку товаров
+                    </button>
+                </Link>
+                <a href="/admin" target="_blank" rel="noopener noreferrer">
+                    <button style={{ padding: '0.5rem 1rem', cursor: 'pointer' }}>
+                        Перейти в систему администрирования
+                    </button>
+                </a>
+            </div>
+        </div>
+    );
+};
+</file>
+
+<file path="src/pages/ProductDetailPage.tsx">
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { apiClient } from '../api';
+import { AddCommentForm } from '../components/AddCommentForm';
+import { getSimilarProducts } from '../services/api.service';
+import { IComment, ISimilarProduct, IProduct } from '../types';
+
+export const ProductDetailPage: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+
+    const [product, setProduct] = useState<IProduct | null>(null);
+    const [similar, setSimilar] = useState<ISimilarProduct[]>([]);
+    const [comments, setComments] = useState<IComment[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        if (!id) return;
+        setLoading(true);
+
+        Promise.all([
+            apiClient.get(`/products/${id}`),
+            getSimilarProducts(id), // <--- Вызываем сервисный метод вместо apiClient.get
+            apiClient.get(`/comments?productId=${id}`)
+        ]).then(([prodRes, simData, commRes]) => {
+            setProduct(prodRes.data);
+            setSimilar(simData);
+            setComments(commRes.data);
+        }).finally(() => setLoading(false));
+    }, [id]);
+
+    const handleCommentAdded = (newComment: IComment) => {
+        setComments((prev) => [...prev, newComment]);
+    };
+
+    if (loading) return <div className="loader">Загрузка информации о товаре...</div>;
+    if (!product) return <div>Товар не найден</div>;
+
+    return (
+        <div style={{ padding: '2rem', maxWidth: '900px', margin: '0 auto' }}>
+            <h1>{product.title}</h1>
+
+            <img
+                src={product.thumbnail || 'https://via.placeholder.com/400x300'}
+                alt={product.title}
+                style={{ maxWidth: '400px', width: '100%', borderRadius: '8px' }}
+            />
+
+            <p style={{ marginTop: '1rem' }}>{product.description}</p>
+            <h2>Цена: {product.price.toLocaleString()} ₽</h2>
+
+            <hr style={{ margin: '2rem 0' }} />
+
+            <section>
+                <h3>Похожие товары</h3>
+                {similar.length === 0 ? (
+                    <p>Похожих товаров нет</p>
+                ) : (
+                    <ul>
+                        {similar.map((item) => (
+                            <li key={item.id}>
+                                <Link to={`/${item.id}`}>{item.title}</Link> — {item.price.toLocaleString()} ₽
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </section>
+
+            <hr style={{ margin: '2rem 0' }} />
+
+            <section>
+                <h3>Комментарии</h3>
+                {comments.map((c) => (
+                    <div key={c.id} style={{ borderBottom: '1px solid #eee', padding: '0.5rem 0' }}>
+                        <h4>{c.title} <small>({c.email})</small></h4>
+                        <p>{c.text}</p>
+                    </div>
+                ))}
+
+                <AddCommentForm productId={product.id} onCommentAdded={handleCommentAdded} />
+            </section>
+        </div>
+    );
+};
+</file>
+
+<file path="src/pages/ProductsListPage.tsx">
+import React, { useEffect, useState, useMemo } from 'react';
+import { ProductCard } from '../components/ProductCard';
+import { getProducts } from '../services/api.service';
+import { IProduct } from '../types';
+
+export const ProductsListPage: React.FC = () => {
+    const [products, setProducts] = useState<IProduct[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+
+    const [searchTitle, setSearchTitle] = useState('');
+    const [priceFrom, setPriceFrom] = useState('');
+    const [priceTo, setPriceTo] = useState('');
+
+    useEffect(() => {
+        getProducts()
+            .then((data) => setProducts(data))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const filteredProducts = useMemo(() => {
+        return products.filter((p) => {
+            const matchesTitle = p.title.toLowerCase().includes(searchTitle.toLowerCase());
+            const matchesPriceFrom = priceFrom === '' || p.price >= Number(priceFrom);
+            const matchesPriceTo = priceTo === '' || p.price <= Number(priceTo);
+            return matchesTitle && matchesPriceFrom && matchesPriceTo;
+        });
+    }, [products, searchTitle, priceFrom, priceTo]);
+
+    if (loading) return <div className="loader">Загрузка списка товаров...</div>;
+
+    return (
+        <div style={{ padding: '2rem' }}>
+            <h1>Список товаров ({filteredProducts.length})</h1>
+
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                <input
+                    type="text"
+                    placeholder="Поиск по названию..."
+                    value={searchTitle}
+                    onChange={(e) => setSearchTitle(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Цена от"
+                    value={priceFrom}
+                    onChange={(e) => setPriceFrom(e.target.value)}
+                />
+                <input
+                    type="number"
+                    placeholder="Цена до"
+                    value={priceTo}
+                    onChange={(e) => setPriceTo(e.target.value)}
+                />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
+                {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                ))}
+            </div>
+        </div>
+    );
+};
+</file>
+
+<file path="src/services/api.service.ts">
+import { apiClient } from '../api';
+import { IProduct, ISimilarProduct, IComment, ICreateCommentDto } from '../types';
+
+export const getProducts = async (): Promise<IProduct[]> => {
+    const response = await apiClient.get<IProduct[]>('/products');
+    return response.data;
+};
+
+export const getSimilarProducts = async (productId: string): Promise<ISimilarProduct[]> => {
+    const response = await apiClient.get<ISimilarProduct[]>(`/similar/${productId}`);
+    return response.data;
+};
+
+export const addComment = async (dto: ICreateCommentDto): Promise<IComment> => {
+    const response = await apiClient.post<IComment>('/comments', dto);
+    return response.data;
+};
+</file>
+
+<file path="src/types/index.ts">
+export interface IProduct {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    thumbnail?: string;
+    commentsCount?: number;
+}
+
+export interface ISimilarProduct {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+}
+
+export interface IComment {
+    id: string;
+    productId: string;
+    title: string;
+    email: string;
+    text: string;
+    createdAt?: string;
+}
+
+export interface ICreateCommentDto {
+    productId: string;
+    title: string;
+    email: string;
+    text: string;
+}
+</file>
+
+<file path="src/App.tsx">
+import * as React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { MainPage } from './pages/MainPage';
+import { ProductsListPage } from './pages/ProductsListPage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
+
+export const App: React.FC = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/products-list" element={<ProductsListPage />} />
+                <Route path="/:id" element={<ProductDetailPage />} />
+            </Routes>
+        </BrowserRouter>
+    );
+};
+</file>
+
+<file path="src/index.tsx">
+import * as React from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+
+const rootElement = document.getElementById('root');
+
+if (rootElement) {
+    const root = createRoot(rootElement);
+    root.render(
+        <React.StrictMode>
+            <App />
+        </React.StrictMode>
+    );
+}
+</file>
+
+<file path="package.json">
+{
+  "name": "shop-client",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.19.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "web-vitals": "^3.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src"]
+}
+</file>
+
+</files>

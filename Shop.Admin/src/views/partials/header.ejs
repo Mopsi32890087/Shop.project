@@ -1,0 +1,8 @@
+<header class="header">
+    <nav class="navigation">
+        <a href="/admin">Список товаров</a>
+        <% if (typeof currentPath !== 'undefined' && currentPath !== '/admin/login') { %>
+        <a href="/admin/new-product" class="btn-add">Add product</a>
+        <% } %>
+    </nav>
+</header>

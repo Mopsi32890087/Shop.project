@@ -5,7 +5,7 @@ import { updateProductWithSimilar } from '../models/products.model';
 const API_HOST = process.env.API_HOST || 'http://localhost:3000';
 
 /**
- * Рендеринг страницы детализации и редактирования товара (/admin/:id)
+ * Рендеринг страницы детализации и редактирования товара (/admin/edit-product/:id)
  */
 export const renderProductDetails = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -41,7 +41,7 @@ export const renderProductDetails = async (req: Request, res: Response): Promise
 };
 
 /**
- * Обработка отправки формы сохранения изменений (POST /admin/:id)
+ * Обработка отправки формы сохранения изменений (POST /admin/edit-product/:id)
  */
 export const handleProductUpdate = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -61,7 +61,7 @@ export const handleProductUpdate = async (req: Request, res: Response): Promise<
         );
 
         // Перенаправляем обратно на страницу товара после успешного сохранения
-        res.redirect(`/admin/${id}`);
+        res.redirect(`/admin/edit-product/${id}`);
     } catch (error) {
         console.error('[Shop.Admin] Ошибка при обновлении товара:', error);
         res.status(500).render('error', { message: 'Ошибка при сохранении изменений' });
